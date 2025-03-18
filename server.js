@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Your specific server configuration
 const MC_SERVER = {
-    host: '172.17.251.236',
+    host: 'mc',
     port: 25565,
     rconPort: 25575,
     rconPassword: "teinf"
