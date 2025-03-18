@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Server Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .map-container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #minecraft-map {
+            height: 600px;
+            width: 100%;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+        }
+        .player-marker {
+            background-color: #ff4444;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.5);
+        }
+        .player-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f8f8;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+        .coordinates {
+            font-family: monospace;
+            color: #666;
+            margin: 5px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .refresh-btn {
+            background-color: #008CBA;
+            margin-bottom: 10px;
+            width: 100%;
+            padding: 10px;
+        }
+        .server-status {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Server Dashboard</h2>
+            <div id="serverStatus" class="server-status">
+                Connecting to server...
+            </div>
+            <button class="refresh-btn" onclick="refreshPlayers()">Refresh Data</button>
+            <div id="playerList">
+                Loading players...
+            </div>
+        </div>
+        <div class="map-container">
+            <h2>World Map</h2>
+            <div id="minecraft-map"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let markers = {};
+
+        function initMap() {
+            map = L.map('minecraft-map', {
+                crs: L.CRS.Simple,
+                minZoom: -2,
+                maxZoom: 2
+            });
+
+            // Set map bounds (adjust these based on your world size)
+            const bounds = [[-1000, -1000], [1000, 1000]];
+            
+            // Add a grid pattern background
+            L.gridLayer({
+                tileSize: 32,
+                opacity: 0.1
+            }).addTo(map);
+
+            map.fitBounds(bounds);
+            map.setView([0, 0], 0);
+
+            // Add coordinate axes
+            L.polyline([[-1000, 0], [1000, 0]], {color: 'red', weight: 1}).addTo(map);
+            L.polyline([[0, -1000], [0, 1000]], {color: 'blue', weight: 1}).addTo(map);
+        }
+
+        function formatCoordinates(pos) {
+            return `X: ${Math.round(pos.x)}, Y: ${Math.round(pos.y)}, Z: ${Math.round(pos.z)}`;
+        }
+
+        async function refreshPlayers() {
+            try {
+                const response = await fetch('/api/players');
+                const data = await response.json();
+                
+                // Update server status
+                const serverStatus = document.getElementById('serverStatus');
+                serverStatus.innerHTML = `
+                    Online Players: ${data.online}/${data.max}<br>
+                    Version: ${data.version}
+                `;
+
+                const playerList = document.getElementById('playerList');
+                playerList.innerHTML = '<h3>Players Online</h3>';
+                
+                // Clear old markers
+                Object.values(markers).forEach(marker => map.removeLayer(marker));
+                markers = {};
+
+                data.players.forEach(player => {
+                    // Update player list
+                    const playerDiv = document.createElement('div');
+                    playerDiv.className = 'player-item';
+                    playerDiv.innerHTML = `
+                        <strong>${player.name}</strong>
+                        <div class="coordinates">${formatCoordinates(player.position)}</div>
+                        <button onclick="giveDiamond('${player.name}')">Give Diamond</button>
+                    `;
+                    playerList.appendChild(playerDiv);
+
+                    // Update map marker
+                    const pos = [player.position.z, player.position.x];
+                    if (markers[player.name]) {
+                        markers[player.name].setLatLng(pos);
+                    } else {
+                        const marker = L.marker(pos, {
+                            icon: L.divIcon({
+                                className: 'player-marker',
+                                html: `<div title="${player.name}"></div>`
+                            })
+                        }).addTo(map);
+                        marker.bindPopup(`
+                            <b>${player.name}</b><br>
+                            ${formatCoordinates(player.position)}
+                        `);
+                        markers[player.name] = marker;
+                    }
+                });
+
+                if (data.players.length === 0) {
+                    playerList.innerHTML += '<div class="player-item">No players online</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('serverStatus').innerHTML = 'Error connecting to server';
+                document.getElementById('playerList').innerHTML = 'Failed to load player data';
+            }
+        }
+
+        async function giveDiamond(playerName) {
+            try {
+                const response = await fetch('/api/give-diamond', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ playerName })
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to give diamond');
+            }
+        }
+
+        // Initialize map and start periodic updates
+        initMap();
+        refreshPlayers();
+        setInterval(refreshPlayers, 5000);  // Update every 5 seconds
+    </script>
+</body>
+</html>
