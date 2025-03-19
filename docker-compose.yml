@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   minecraft:
     image: itzg/minecraft-server
     ports:
       - "25565:25565"
+      - "25575:25575"  # Added RCON port
     environment:
       EULA: "TRUE"
       ENABLE_RCON: "true"
@@ -29,6 +28,6 @@ services:
       NODE_ENV: production
       RCON_PASSWORD: "${RCON_PASSWORD}"
     depends_on:
-      minecraft-server:
+      minecraft:        # Changed from minecraft-server to minecraft
         condition: service_healthy
     restart: unless-stopped
