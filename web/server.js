@@ -12,7 +12,7 @@ const MC_SERVER = {
     host: 'mc',
     port: 25565,
     rconPort: 25575,
-    rconPassword: "teinf"
+    rconPassword: process.env.RCON_PASSWORD
 };
 
 // Function to get player position using RCON
