@@ -12,6 +12,11 @@ services:
       ONLINE_MODE: "false"
     volumes:
       - ./minecraft-server/data:/data
+    healthcheck:
+      test: ["CMD", "mc-status", "localhost:25565"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   web:
