@@ -13,5 +13,5 @@ This project provides a Docker Compose setup for running a Minecraft server alon
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/minecraft-nodejs-project.git
-   cd minecraft-nodejs-project
+   git clone https://github.com/schto173/teinf-minecraft-dashboard
+   cd teinf-minecraft-dashboard
