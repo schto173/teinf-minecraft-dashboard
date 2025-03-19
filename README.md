@@ -99,10 +99,10 @@ docker compose down
 minecraft-nodejs-project/
 ├── docker-compose.yml     # Service configuration
 ├── .env                   # RCON password
-├── nodejs-app/         
+├── web/         
 │   ├── Dockerfile         # Dockerfile for Node.js app
 │   ├── src/            
-│   │   └── index.js       # Main server code
+│   │   └── app.js       # Main server code
 │   └── public/            # Web interface
 └── minecraft-server/   
     └── data/              # World data
