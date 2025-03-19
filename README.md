@@ -14,8 +14,12 @@
    RCON_PASSWORD=your_secure_password_here
    ```
 
-3. Start the services:
+3. Start the services with debugging:
    ```bash
+   docker compose up
+   ```
+   later you can use to detatch the running console.
+      ```bash
    docker compose up -d
    ```
 
