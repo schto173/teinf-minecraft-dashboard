@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Your specific server configuration
 const MC_SERVER = {
-    host: 'mc',
+    host: 'minecraft',
     port: 25565,
     rconPort: 25575,
     rconPassword: process.env.RCON_PASSWORD
