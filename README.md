@@ -1,4 +1,4 @@
-```markdown
+
 # Minecraft Server with Node.js RCON Integration
 
 ## Quick Start
