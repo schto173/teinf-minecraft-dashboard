@@ -9,6 +9,7 @@ services:
       EULA: "TRUE"
       ENABLE_RCON: "true"
       RCON_PASSWORD: "${RCON_PASSWORD}"
+      ONLINE_MODE: "false"
     volumes:
       - ./minecraft-server/data:/data
     restart: unless-stopped
